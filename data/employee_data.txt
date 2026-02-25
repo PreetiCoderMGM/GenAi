@@ -1,0 +1,28 @@
+Employee Company Data Report
+
+Total Employees: 180
+
+Engineering Department:
+Total Employees: 51
+Average Experience: 5.43 years
+Average Salary: 782101.14
+Major Locations: Surat, Mumbai, Kolkata, Kochi, Pune, Chandigarh, Ahmedabad, Jaipur, Hyderabad, Bangalore, Chennai, Delhi
+
+HR Department:
+Total Employees: 34
+Average Experience: 5.5 years
+Average Salary: 710835.62
+Major Locations: Kolkata, Chandigarh, Pune, Kochi, Delhi, Jaipur, Hyderabad, Mumbai, Ahmedabad, Surat, Bangalore
+
+Marketing Department:
+Total Employees: 41
+Average Experience: 5.15 years
+Average Salary: 752221.9
+Major Locations: Surat, Hyderabad, Chandigarh, Chennai, Delhi, Jaipur, Pune, Ahmedabad, Mumbai, Kolkata, Bangalore, Kochi
+
+Sales Department:
+Total Employees: 54
+Average Experience: 6.0 years
+Average Salary: 751063.37
+Major Locations: Bangalore, Hyderabad, Chandigarh, Kolkata, Jaipur, Surat, Pune, Chennai, Kochi, Ahmedabad, Mumbai
+
