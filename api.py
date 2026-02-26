@@ -8,10 +8,8 @@ gen_ai_bp = Blueprint('gen_ai', __name__)
 def ask_llm():
     try:
         data = request.get_json()
-
         if not data or "question" not in data:
             return jsonify({"status": "error", "message": "Question is required in request body"}), 400
-
         question = data["question"]
         answer = query_llm(question)
         if not answer:
