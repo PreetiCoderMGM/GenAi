@@ -1,3 +1,8 @@
-GeminiKey = "AIzaSyCFnWaIbkmavVqfgvsdfgdsfgdsfgdsfgsdf"
-GeminiModel = "gemini-2.5-flash-lite"
-DataFolderPath = "data"
+import json
+
+with open("config.json", "r") as f:
+    config = json.load(f)
+
+GeminiKey = config['GeminiKey']
+GeminiModel = config['GeminiModel']
+DataFolderPath = config['DataFolderPath']
