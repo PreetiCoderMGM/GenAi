@@ -38,7 +38,6 @@ body {
     color: white;
     font-size: 18px;
     text-align: center;
-    font-weight: 500;
 }
 
 .chat-container {
@@ -50,7 +49,6 @@ body {
 .message {
     margin-bottom: 20px;
     display: flex;
-    line-height: 1.6;
 }
 
 .user-message {
@@ -90,7 +88,6 @@ input {
     padding: 14px;
     border-radius: 8px;
     border: none;
-    font-size: 15px;
     outline: none;
 }
 
@@ -100,23 +97,12 @@ button {
     border-radius: 8px;
     border: none;
     background: #19c37d;
-    font-weight: 600;
     cursor: pointer;
-}
-
-button:hover {
-    opacity: 0.9;
 }
 
 .typing {
     font-style: italic;
     opacity: 0.7;
-    animation: blink 1s infinite alternate;
-}
-
-@keyframes blink {
-    from { opacity: 0.4; }
-    to { opacity: 1; }
 }
 </style>
 </head>
@@ -138,6 +124,7 @@ button:hover {
 
 const chat = document.getElementById("chat");
 
+// Add message to UI
 function addMessage(text, type) {
     const messageDiv = document.createElement("div");
     messageDiv.className = `message ${type}`;
@@ -153,6 +140,31 @@ function addMessage(text, type) {
     return bubble;
 }
 
+// 🔥 Load previous chats
+async function loadChatHistory() {
+    try {
+        const response = await fetch("http://127.0.0.1:5002/get_chat");
+        const result = await response.json();
+
+        if (result.data && Array.isArray(result.data)) {
+
+            // Sort oldest -> newest (important for chat flow)
+            const sorted = result.data.sort((a, b) =>
+                new Date(a.ts) - new Date(b.ts)
+            );
+
+            sorted.forEach(item => {
+                addMessage(item.question, "user-message");
+                addMessage(item.answer, "bot-message");
+            });
+        }
+
+    } catch (error) {
+        console.error("Error loading chat:", error);
+    }
+}
+
+// 🔥 Send new message
 async function sendMessage() {
     const input = document.getElementById("question");
     const question = input.value.trim();
@@ -170,9 +182,7 @@ async function sendMessage() {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({
-                question: question
-            })
+            body: JSON.stringify({ question })
         });
 
         const data = await response.json();
@@ -186,16 +196,21 @@ async function sendMessage() {
         }
 
     } catch (error) {
-        typingBubble.innerText = "Server connection error.";
+        typingBubble.innerText = "Server error.";
     }
 }
 
+// Enter key support
 document.getElementById("question")
-    .addEventListener("keypress", function(event) {
-        if (event.key === "Enter") {
-            sendMessage();
-        }
+.addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+        sendMessage();
+    }
 });
+
+// 🚀 Load history on page load
+window.onload = loadChatHistory;
+
 </script>
 
 </body>
