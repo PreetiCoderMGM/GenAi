@@ -7,6 +7,20 @@ import os
 gen_ai_bp = Blueprint('gen_ai', __name__)
 
 chat_db_file_path = os.path.join(os.getcwd(), "DB", "chat.json")
+user_db_file_path = os.path.join(os.getcwd(), "DB", "user.json")
+
+
+def get_user(filepath=user_db_file_path):
+    try:
+        with open(filepath, "r") as f:
+            data = json.load(f)
+        if not isinstance(data, list):
+            data = []
+        return data
+    except Exception as ex:
+        print(ex)
+        print(f"Unable to get users ex: {ex}")
+        return []
 
 
 def append_to_json(new_data, filepath=chat_db_file_path):
@@ -48,14 +62,14 @@ def ask_llm():
         if not answer:
             res_data = {"question": question, "answer": "", "status": "Fail", "ts": str(datetime.datetime.now()),
                         "user_id": 1}
-            add_data = append_to_json(res_data)
+            add_data = append_to_json(res_data, filepath=chat_db_file_path)
             if not add_data:
                 print(f"Unable to add data in file.")
             return jsonify({"status": "error", "message": "Could not generate answer."}), 400
 
         res_data = {"question": question, "answer": answer, "status": "Pass", "ts": str(datetime.datetime.now()),
                     "user_id": 1}
-        add_data = append_to_json(res_data)
+        add_data = append_to_json(res_data, filepath=chat_db_file_path)
         if not add_data:
             print(f"Unable to add data in file.")
         return jsonify({"status": "success", "answer": answer}), 200
@@ -80,4 +94,32 @@ def get_chat():
         return jsonify({"data": data}), 200
     except Exception as ex:
         print(f"Exception occurred in ask_llm, ex: {ex}")
+        return jsonify({"status": "error", "message": "Internal server error"}), 500
+
+
+@gen_ai_bp.route('/sign_up', methods=['POST'])
+def sign_up():
+    try:
+        data = request.get_json()
+        if not data or "email" not in data or "name" not in data or "password" not in data:
+            return jsonify({"status": "error", "message": "Invalid data or argument."}), 400
+        email = data["email"]
+        name = data["name"]
+        password = data["password"]
+        all_users = get_user()
+        all_user_id = []
+        for user in all_users:
+            if user['email'] == email:
+                return jsonify({"status": "error", "message": f"User with email: {email} already exist."}), 422
+            all_user_id.append(user['user_id'])
+        next_user_id = max(all_user_id) + 1 if all_user_id else 1
+        user_data = {"email": email, "name": name, "password": password, "user_id": next_user_id,
+                     "sign_up_ts": str(datetime.datetime.now())}
+        add_data = append_to_json(user_data, filepath=user_db_file_path)
+        if not add_data:
+            return jsonify({"status": "error", "message": f"Unable to add User with email: {email}."}), 422
+        return jsonify({"status": "Success", "message": f"User with email: {email} added as user id:"
+                                                        f" {next_user_id}"}), 200
+    except Exception as ex:
+        print(f"Exception occurred in adding user, ex: {ex}")
         return jsonify({"status": "error", "message": "Internal server error"}), 500
