@@ -123,3 +123,34 @@ def sign_up():
     except Exception as ex:
         print(f"Exception occurred in adding user, ex: {ex}")
         return jsonify({"status": "error", "message": "Internal server error"}), 500
+
+
+@gen_ai_bp.route('/login', methods=['POST'])
+def login():
+    try:
+        data = request.get_json()
+        if not data or "email" not in data or "password" not in data:
+            return jsonify({"status": "error", "message": "Invalid data or argument."}), 400
+        email = data["email"]
+        password = data["password"]
+        all_users = get_user()
+
+        temp_user = None
+        for user in all_users:
+            if user['email'] == email:
+                temp_user = user
+                break
+
+        if not temp_user:
+            return jsonify({"status": "error", "message": f"Invalid email: {email}, plz sign up."}), 400
+
+        if temp_user['password'] != password:
+            return jsonify({"status": "error", "message": f"Invalid password for"
+                                                          f" user id: {temp_user['user_id']}."}), 400
+
+        login_res = {"is_login": True, "user_id": temp_user['user_id'], "ts": datetime.datetime.now()}
+        return jsonify({"status": "Success", "message": f"User with email: {email} logged in successfully:",
+                        'data': login_res}), 200
+    except Exception as ex:
+        print(f"Exception occurred in adding user, ex: {ex}")
+        return jsonify({"status": "error", "message": "Internal server error"}), 500
