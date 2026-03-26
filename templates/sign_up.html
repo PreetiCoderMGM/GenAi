@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login</title>
+<title>Sign Up</title>
 
 <style>
 * {
@@ -74,6 +74,13 @@ button:disabled {
     cursor: not-allowed;
 }
 
+/* Secondary button (Login) */
+.secondary-btn {
+    margin-top: 10px;
+    background: #565869;
+    color: white;
+}
+
 .response {
     margin-top: 15px;
     padding: 12px;
@@ -90,51 +97,81 @@ button:disabled {
     background: #565869;
     color: white;
 }
+
+.login-text {
+    margin-top: 12px;
+    text-align: center;
+    color: #ccc;
+    font-size: 14px;
+}
+
+.login-text a {
+    color: #19c37d;
+    text-decoration: none;
+    font-weight: bold;
+}
 </style>
 </head>
 
 <body>
 
 <div class="chat-wrapper">
-    <div class="header">Login</div>
+    <div class="header">Create Account</div>
 
     <div class="form-container">
+        <input type="text" id="name" placeholder="Enter your name" />
         <input type="email" id="email" placeholder="Enter your email" />
         <input type="password" id="password" placeholder="Enter your password" />
 
-        <button id="loginBtn" onclick="login()">Login</button>
+        <!-- Sign Up Button -->
+        <button id="signupBtn" onclick="signUp()">Sign Up</button>
+
+        <!-- Login Button -->
+        <button class="secondary-btn" onclick="goToLogin()">Login</button>
+
+        <!-- Login Link -->
+        <p class="login-text">
+            Already have an account?
+            <a href="/login">Login</a>
+        </p>
 
         <div id="response" class="response" style="display:none;"></div>
     </div>
 </div>
 
 <script>
-async function login() {
+function goToLogin() {
+    window.location.href = "/login";
+}
+
+async function signUp() {
+    const nameInput = document.getElementById("name");
     const emailInput = document.getElementById("email");
     const passwordInput = document.getElementById("password");
-    const button = document.getElementById("loginBtn");
+    const button = document.getElementById("signupBtn");
     const responseDiv = document.getElementById("response");
 
+    const name = nameInput.value.trim();
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
 
-    if (!email || !password) {
+    if (!name || !email || !password) {
         responseDiv.style.display = "block";
         responseDiv.className = "response error";
-        responseDiv.innerText = "Email and password are required!";
+        responseDiv.innerText = "All fields are required!";
         return;
     }
 
     button.disabled = true;
-    button.innerText = "Logging in...";
+    button.innerText = "Signing up...";
 
     try {
-        const res = await fetch("http://127.0.0.1:5002/login", {
+        const res = await fetch("/api/sign_up", {   // ✅ recommended API route
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ name, email, password })
         });
 
         const data = await res.json();
@@ -144,22 +181,16 @@ async function login() {
         if (res.status === 200) {
             responseDiv.className = "response success";
 
-            // ✅ Store user_id for future use
-            if (data.data && data.data.user_id) {
-                localStorage.setItem("user_id", data.data.user_id);
-            }
-
-            // ✅ Clear inputs on success
+            nameInput.value = "";
             emailInput.value = "";
             passwordInput.value = "";
 
-            // ✅ Optional redirect (uncomment if needed)
+            // Optional redirect to login after signup
             /*
             setTimeout(() => {
-                window.location.href = "chat.html";
+                window.location.href = "/login";
             }, 1000);
             */
-
         } else {
             responseDiv.className = "response error";
         }
@@ -177,7 +208,7 @@ async function login() {
     }
 
     button.disabled = false;
-    button.innerText = "Login";
+    button.innerText = "Sign Up";
 }
 </script>
 

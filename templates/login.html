@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sign Up</title>
+<title>Login</title>
 
 <style>
 * {
@@ -74,6 +74,13 @@ button:disabled {
     cursor: not-allowed;
 }
 
+/* Secondary button (Sign Up) */
+.secondary-btn {
+    margin-top: 10px;
+    background: #565869;
+    color: white;
+}
+
 .response {
     margin-top: 15px;
     padding: 12px;
@@ -90,55 +97,78 @@ button:disabled {
     background: #565869;
     color: white;
 }
+
+.signup-text {
+    margin-top: 12px;
+    text-align: center;
+    color: #ccc;
+    font-size: 14px;
+}
+
+.signup-text a {
+    color: #19c37d;
+    text-decoration: none;
+    font-weight: bold;
+}
 </style>
 </head>
 
 <body>
 
 <div class="chat-wrapper">
-    <div class="header">Create Account</div>
+    <div class="header">Login</div>
 
     <div class="form-container">
-        <input type="text" id="name" placeholder="Enter your name" />
         <input type="email" id="email" placeholder="Enter your email" />
         <input type="password" id="password" placeholder="Enter your password" />
 
-        <button id="signupBtn" onclick="signUp()">Sign Up</button>
+        <!-- Login Button -->
+        <button id="loginBtn" onclick="login()">Login</button>
+
+        <!-- Sign Up Button -->
+        <button class="secondary-btn" onclick="goToSignup()">Create Account</button>
+
+        <!-- Sign Up Link -->
+        <p class="signup-text">
+            Don't have an account?
+            <a href="/sign_up">Sign Up</a>
+        </p>
 
         <div id="response" class="response" style="display:none;"></div>
     </div>
 </div>
 
 <script>
-async function signUp() {
-    const nameInput = document.getElementById("name");
+function goToSignup() {
+    window.location.href = "/sign_up";
+}
+
+async function login() {
     const emailInput = document.getElementById("email");
     const passwordInput = document.getElementById("password");
-    const button = document.getElementById("signupBtn");
+    const button = document.getElementById("loginBtn");
     const responseDiv = document.getElementById("response");
 
-    const name = nameInput.value.trim();
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
 
-    if (!name || !email || !password) {
+    if (!email || !password) {
         responseDiv.style.display = "block";
         responseDiv.className = "response error";
-        responseDiv.innerText = "All fields are required!";
+        responseDiv.innerText = "Email and password are required!";
         return;
     }
 
-    // Disable button while request is in progress
     button.disabled = true;
-    button.innerText = "Signing up...";
+    button.innerText = "Logging in...";
 
     try {
-        const res = await fetch("http://127.0.0.1:5002/sign_up", {
+        const res = await fetch("/api/login", {   // ✅ updated API route
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ name, email, password })
+            body: JSON.stringify({ email, password })
         });
 
         const data = await res.json();
@@ -148,17 +178,25 @@ async function signUp() {
         if (res.status === 200) {
             responseDiv.className = "response success";
 
-            // ✅ Clear inputs on success
-            nameInput.value = "";
+            if (data.data && data.data.user_id) {
+                localStorage.setItem("user_id", data.data.user_id);
+            }
+
             emailInput.value = "";
             passwordInput.value = "";
+
+            // Optional redirect after login
+            /*
+            setTimeout(() => {
+                window.location.href = "/chat";
+            }, 1000);
+            */
         } else {
             responseDiv.className = "response error";
         }
 
         responseDiv.innerText = data.message;
 
-        // Optional: auto-hide message after 3 seconds
         setTimeout(() => {
             responseDiv.style.display = "none";
         }, 3000);
@@ -169,9 +207,8 @@ async function signUp() {
         responseDiv.innerText = "Server error. Please try again.";
     }
 
-    // Re-enable button
     button.disabled = false;
-    button.innerText = "Sign Up";
+    button.innerText = "Login";
 }
 </script>
 

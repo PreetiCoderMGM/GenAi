@@ -51,7 +51,7 @@ def append_to_json(new_data, filepath=chat_db_file_path):
         return False
 
 
-@gen_ai_bp.route('/ask_llm', methods=['POST'])
+@gen_ai_bp.route('/api/ask_llm', methods=['POST'])
 def ask_llm():
     try:
         data = request.get_json()
@@ -78,7 +78,7 @@ def ask_llm():
         return jsonify({"status": "error", "message": "Internal server error"}), 500
 
 
-@gen_ai_bp.route('/get_chat', methods=['GET'])
+@gen_ai_bp.route('/api/get_chat', methods=['GET'])
 def get_chat():
     try:
         number_of_rec = 10
@@ -97,7 +97,7 @@ def get_chat():
         return jsonify({"status": "error", "message": "Internal server error"}), 500
 
 
-@gen_ai_bp.route('/sign_up', methods=['POST'])
+@gen_ai_bp.route('/api/sign_up', methods=['POST'])
 def sign_up():
     try:
         data = request.get_json()
@@ -125,7 +125,7 @@ def sign_up():
         return jsonify({"status": "error", "message": "Internal server error"}), 500
 
 
-@gen_ai_bp.route('/login', methods=['POST'])
+@gen_ai_bp.route('/api/login', methods=['POST'])
 def login():
     try:
         data = request.get_json()
