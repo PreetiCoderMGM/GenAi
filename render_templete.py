@@ -11,3 +11,8 @@ def login_page():
 @auth_bp.route("/sign_up")
 def sign_up_page():
     return render_template("sign_up.html")
+
+
+@auth_bp.route("/chat_page")
+def chat_page():
+    return render_template("chat_page.html")

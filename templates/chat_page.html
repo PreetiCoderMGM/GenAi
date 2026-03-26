@@ -38,6 +38,19 @@ body {
     color: white;
     font-size: 18px;
     text-align: center;
+    position: relative;
+}
+
+.logout-btn {
+    position: absolute;
+    right: 15px;
+    top: 12px;
+    background: red;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
 }
 
 .chat-container {
@@ -110,7 +123,10 @@ button {
 <body>
 
 <div class="chat-wrapper">
-    <div class="header">My AI Assistant</div>
+    <div class="header">
+        My AI Assistant
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
 
     <div class="chat-container" id="chat"></div>
 
@@ -122,9 +138,17 @@ button {
 
 <script>
 
+// ✅ Get user_id from session
+const userId = sessionStorage.getItem("user_id");
+
+// ❌ If not logged in → redirect
+if (!userId) {
+    window.location.href = "/login";
+}
+
 const chat = document.getElementById("chat");
 
-// Add message to UI
+// ✅ Add message UI
 function addMessage(text, type) {
     const messageDiv = document.createElement("div");
     messageDiv.className = `message ${type}`;
@@ -137,18 +161,15 @@ function addMessage(text, type) {
     chat.appendChild(messageDiv);
 
     chat.scrollTop = chat.scrollHeight;
-    return bubble;
 }
 
-// 🔥 Load previous chats
+// ✅ Load chat history using URL param
 async function loadChatHistory() {
     try {
-        const response = await fetch("http://127.0.0.1:5002/get_chat");
+        const response = await fetch(`/api/get_chat/${userId}`);
         const result = await response.json();
 
         if (result.data && Array.isArray(result.data)) {
-
-            // Sort oldest -> newest (important for chat flow)
             const sorted = result.data.sort((a, b) =>
                 new Date(a.ts) - new Date(b.ts)
             );
@@ -164,7 +185,7 @@ async function loadChatHistory() {
     }
 }
 
-// 🔥 Send new message
+// ✅ Send message with user_id in URL
 async function sendMessage() {
     const input = document.getElementById("question");
     const question = input.value.trim();
@@ -173,11 +194,14 @@ async function sendMessage() {
     addMessage(question, "user-message");
     input.value = "";
 
-    const typingBubble = addMessage("Typing...", "bot-message");
-    typingBubble.classList.add("typing");
+    const typingBubble = document.createElement("div");
+    typingBubble.className = "message bot-message";
+    typingBubble.innerHTML = `<div class="bubble typing">Typing...</div>`;
+    chat.appendChild(typingBubble);
+    chat.scrollTop = chat.scrollHeight;
 
     try {
-        const response = await fetch("http://localhost:5002/ask_llm", {
+        const response = await fetch(`/ask_llm/${userId}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -186,18 +210,24 @@ async function sendMessage() {
         });
 
         const data = await response.json();
-
-        typingBubble.classList.remove("typing");
+        typingBubble.remove();
 
         if (data.status === "success") {
-            typingBubble.innerText = data.answer;
+            addMessage(data.answer, "bot-message");
         } else {
-            typingBubble.innerText = "Error: " + data.message;
+            addMessage("Error: " + data.message, "bot-message");
         }
 
     } catch (error) {
-        typingBubble.innerText = "Server error.";
+        typingBubble.remove();
+        addMessage("Server error.", "bot-message");
     }
+}
+
+// ✅ Logout
+function logout() {
+    sessionStorage.removeItem("user_id");
+    window.location.href = "/login";
 }
 
 // Enter key support
@@ -208,7 +238,7 @@ document.getElementById("question")
     }
 });
 
-// 🚀 Load history on page load
+// 🚀 Load chat on page load
 window.onload = loadChatHistory;
 
 </script>

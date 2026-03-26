@@ -6,110 +6,17 @@
 <title>Login</title>
 
 <style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-}
-
-body {
-    background: #343541;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
-
-.chat-wrapper {
-    width: 100%;
-    max-width: 500px;
-    background: #444654;
-    display: flex;
-    flex-direction: column;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.header {
-    background: #202123;
-    padding: 16px;
-    color: white;
-    font-size: 18px;
-    text-align: center;
-}
-
-.form-container {
-    padding: 25px;
-    display: flex;
-    flex-direction: column;
-}
-
-input {
-    width: 100%;
-    padding: 14px;
-    margin-bottom: 15px;
-    border-radius: 8px;
-    border: none;
-    outline: none;
-    background: #565869;
-    color: white;
-}
-
-input::placeholder {
-    color: #ccc;
-}
-
-button {
-    padding: 14px;
-    border-radius: 8px;
-    border: none;
-    background: #19c37d;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-/* Secondary button (Sign Up) */
-.secondary-btn {
-    margin-top: 10px;
-    background: #565869;
-    color: white;
-}
-
-.response {
-    margin-top: 15px;
-    padding: 12px;
-    border-radius: 8px;
-    font-size: 14px;
-}
-
-.success {
-    background: #19c37d;
-    color: black;
-}
-
-.error {
-    background: #565869;
-    color: white;
-}
-
-.signup-text {
-    margin-top: 12px;
-    text-align: center;
-    color: #ccc;
-    font-size: 14px;
-}
-
-.signup-text a {
-    color: #19c37d;
-    text-decoration: none;
-    font-weight: bold;
-}
+* { margin:0; padding:0; box-sizing:border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;}
+body { background:#343541; display:flex; justify-content:center; align-items:center; height:100vh;}
+.chat-wrapper { width:100%; max-width:500px; background:#444654; border-radius:10px; overflow:hidden;}
+.header { background:#202123; padding:16px; color:white; text-align:center;}
+.form-container { padding:25px; display:flex; flex-direction:column;}
+input { padding:14px; margin-bottom:15px; border-radius:8px; border:none; background:#565869; color:white;}
+button { padding:14px; border-radius:8px; border:none; background:#19c37d; cursor:pointer;}
+.secondary-btn { margin-top:10px; background:#565869; color:white;}
+.response { margin-top:15px; padding:12px; border-radius:8px;}
+.success { background:#19c37d; color:black;}
+.error { background:#565869; color:white;}
 </style>
 </head>
 
@@ -122,35 +29,19 @@ button:disabled {
         <input type="email" id="email" placeholder="Enter your email" />
         <input type="password" id="password" placeholder="Enter your password" />
 
-        <!-- Login Button -->
         <button id="loginBtn" onclick="login()">Login</button>
-
-        <!-- Sign Up Button -->
-        <button class="secondary-btn" onclick="goToSignup()">Create Account</button>
-
-        <!-- Sign Up Link -->
-        <p class="signup-text">
-            Don't have an account?
-            <a href="/sign_up">Sign Up</a>
-        </p>
+        <button class="secondary-btn" onclick="window.location.href='/sign_up'">Create Account</button>
 
         <div id="response" class="response" style="display:none;"></div>
     </div>
 </div>
 
 <script>
-function goToSignup() {
-    window.location.href = "/sign_up";
-}
-
 async function login() {
-    const emailInput = document.getElementById("email");
-    const passwordInput = document.getElementById("password");
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
     const button = document.getElementById("loginBtn");
     const responseDiv = document.getElementById("response");
-
-    const email = emailInput.value.trim();
-    const password = passwordInput.value.trim();
 
     if (!email || !password) {
         responseDiv.style.display = "block";
@@ -163,48 +54,39 @@ async function login() {
     button.innerText = "Logging in...";
 
     try {
-        const res = await fetch("/api/login", {   // ✅ updated API route
+        const res = await fetch("/api/login", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: {"Content-Type": "application/json"},
             body: JSON.stringify({ email, password })
         });
 
         const data = await res.json();
-
         responseDiv.style.display = "block";
 
-        if (res.status === 200) {
+        if (res.status === 200 && data.data?.is_login === true) {
             responseDiv.className = "response success";
 
-            if (data.data && data.data.user_id) {
-                localStorage.setItem("user_id", data.data.user_id);
-            }
+            const userId = data.data.user_id;
 
-            emailInput.value = "";
-            passwordInput.value = "";
+            // ✅ Save session
+            sessionStorage.setItem("user_id", userId);
 
-            // Optional redirect after login
-            /*
+            responseDiv.innerText = data.message;
+
+            // ✅ Redirect
             setTimeout(() => {
-                window.location.href = "/chat";
+                window.location.href = "/chat_page";
             }, 1000);
-            */
+
         } else {
             responseDiv.className = "response error";
+            responseDiv.innerText = data.message;
         }
 
-        responseDiv.innerText = data.message;
-
-        setTimeout(() => {
-            responseDiv.style.display = "none";
-        }, 3000);
-
-    } catch (error) {
+    } catch (err) {
         responseDiv.style.display = "block";
         responseDiv.className = "response error";
-        responseDiv.innerText = "Server error. Please try again.";
+        responseDiv.innerText = "Server error.";
     }
 
     button.disabled = false;

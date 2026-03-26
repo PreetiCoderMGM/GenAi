@@ -78,9 +78,10 @@ def ask_llm():
         return jsonify({"status": "error", "message": "Internal server error"}), 500
 
 
-@gen_ai_bp.route('/api/get_chat', methods=['GET'])
-def get_chat():
+@gen_ai_bp.route('/api/get_chat/<user_id>', methods=['GET'])
+def get_chat(user_id: int):
     try:
+        user_id = int(user_id)
         number_of_rec = 10
         # Check if file exists
         if not os.path.exists(chat_db_file_path):
@@ -88,8 +89,11 @@ def get_chat():
         # Check if file is not empty
         with open(chat_db_file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
-
-        sorted_data = sorted(data, key=lambda x: x.get("ts", ""), reverse=True)
+        user_data = []
+        for d in data:
+            if d['user_id'] == user_id:
+                user_data.append(d)
+        sorted_data = sorted(user_data, key=lambda x: x.get("ts", ""), reverse=True)
         data = sorted_data[:number_of_rec]
         return jsonify({"data": data}), 200
     except Exception as ex:
