@@ -6,10 +6,10 @@ import os
 from bl import get_user, append_to_json
 from setting import user_db_file_path, chat_db_file_path
 
-gen_ai_bp = Blueprint('gen_ai', __name__)
+api_bp = Blueprint('api_bp', __name__)
 
 
-@gen_ai_bp.route('/api/ask_llm', methods=['POST'])
+@api_bp.route('/api/ask_llm', methods=['POST'])
 def ask_llm():
     try:
         data = request.get_json()
@@ -36,7 +36,7 @@ def ask_llm():
         return jsonify({"status": "error", "message": "Internal server error"}), 500
 
 
-@gen_ai_bp.route('/api/get_chat/<user_id>', methods=['GET'])
+@api_bp.route('/api/get_chat/<user_id>', methods=['GET'])
 def get_chat(user_id: int):
     try:
         user_id = int(user_id)
@@ -59,7 +59,7 @@ def get_chat(user_id: int):
         return jsonify({"status": "error", "message": "Internal server error"}), 500
 
 
-@gen_ai_bp.route('/api/sign_up', methods=['POST'])
+@api_bp.route('/api/sign_up', methods=['POST'])
 def sign_up():
     try:
         data = request.get_json()
@@ -87,7 +87,7 @@ def sign_up():
         return jsonify({"status": "error", "message": "Internal server error"}), 500
 
 
-@gen_ai_bp.route('/api/login', methods=['POST'])
+@api_bp.route('/api/login', methods=['POST'])
 def login():
     try:
         data = request.get_json()
