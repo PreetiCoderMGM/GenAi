@@ -1,9 +1,6 @@
 import json
 import os
-
-
-chat_db_file_path = os.path.join(os.getcwd(), "DB", "chat.json")
-user_db_file_path = os.path.join(os.getcwd(), "DB", "user.json")
+from setting import user_db_file_path, chat_db_file_path
 
 
 def get_user(filepath=user_db_file_path):

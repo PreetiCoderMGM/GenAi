@@ -3,7 +3,9 @@ from gemini import query_llm
 import datetime
 import json
 import os
-from bl import get_user, append_to_json, user_db_file_path, chat_db_file_path
+from bl import get_user, append_to_json
+from setting import user_db_file_path, chat_db_file_path
+
 gen_ai_bp = Blueprint('gen_ai', __name__)
 
 
