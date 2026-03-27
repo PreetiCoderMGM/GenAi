@@ -5,6 +5,8 @@ import json
 import os
 from bl import get_user, append_to_json
 from setting import user_db_file_path, chat_db_file_path
+import setting
+from utils import get_guid
 
 api_bp = Blueprint('api_bp', __name__)
 
@@ -113,6 +115,30 @@ def login():
         login_res = {"is_login": True, "user_id": temp_user['user_id'], "ts": datetime.datetime.now()}
         return jsonify({"status": "Success", "message": f"User with email: {email} logged in successfully:",
                         'data': login_res}), 200
+    except Exception as ex:
+        print(f"Exception occurred in adding user, ex: {ex}")
+        return jsonify({"status": "error", "message": "Internal server error"}), 500
+
+
+@api_bp.route('/api/add_file', methods=['POST'])
+def add_file():
+    try:
+        if 'file' not in request.files:
+            return jsonify({"status": "error", "message": "No file part in request"}), 400
+
+        file = request.files['file']
+
+        # Check if file is selected
+        if file.filename == '':
+            return jsonify({"status": "error", "message": "No file selected"}), 400
+
+        # Save file
+        save_file_name = f"{get_guid()}_{file.filename}"
+        file_path = os.path.join(setting.DataFolderPath, save_file_name)
+        file.save(file_path)
+
+        return jsonify({"status": "Success", "message": "File uploaded successfully",
+                        "file_name": file.filename, "file_path": file_path}), 200
     except Exception as ex:
         print(f"Exception occurred in adding user, ex: {ex}")
         return jsonify({"status": "error", "message": "Internal server error"}), 500
