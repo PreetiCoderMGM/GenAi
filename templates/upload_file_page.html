@@ -36,6 +36,15 @@ button { padding:14px; border-radius:8px; border:none; background:#19c37d; curso
 </div>
 
 <script>
+
+// ✅ Get user_id from session
+const userId = sessionStorage.getItem("user_id");
+
+// ❌ If not logged in → redirect
+if (!userId) {
+    window.location.href = "/login";
+}
+
 async function uploadFile() {
     const fileInput = document.getElementById("fileInput");
     const button = document.getElementById("uploadBtn");
@@ -56,7 +65,8 @@ async function uploadFile() {
     button.innerText = "Uploading...";
 
     try {
-        const res = await fetch("/api/add_file", {
+        // ✅ Pass user_id in URL (same pattern as chat API)
+        const res = await fetch(`/api/add_file/${parseInt(userId)}`, {
             method: "POST",
             body: formData
         });
@@ -82,6 +92,7 @@ async function uploadFile() {
     button.disabled = false;
     button.innerText = "Upload";
 }
+
 </script>
 
 </body>

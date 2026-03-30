@@ -1,9 +1,22 @@
 import json
 import os
-from setting import user_db_file_path, chat_db_file_path
+from setting import user_db_file_path, chat_db_file_path, files_db_file_path
 
 
 def get_user(filepath=user_db_file_path):
+    try:
+        with open(filepath, "r") as f:
+            data = json.load(f)
+        if not isinstance(data, list):
+            data = []
+        return data
+    except Exception as ex:
+        print(ex)
+        print(f"Unable to get users ex: {ex}")
+        return []
+
+
+def get_files(filepath=files_db_file_path):
     try:
         with open(filepath, "r") as f:
             data = json.load(f)

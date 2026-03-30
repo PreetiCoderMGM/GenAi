@@ -3,7 +3,7 @@ from gemini import query_llm
 import datetime
 import json
 import os
-from bl import get_user, append_to_json
+from bl import get_user, append_to_json, get_files
 from setting import user_db_file_path, chat_db_file_path
 import setting
 from utils import get_guid
@@ -120,9 +120,10 @@ def login():
         return jsonify({"status": "error", "message": "Internal server error"}), 500
 
 
-@api_bp.route('/api/add_file', methods=['POST'])
-def add_file():
+@api_bp.route('/api/add_file/<user_id>', methods=['POST'])
+def add_file(user_id):
     try:
+        user_id = int(user_id)
         if 'file' not in request.files:
             return jsonify({"status": "error", "message": "No file part in request"}), 400
 
@@ -132,10 +133,22 @@ def add_file():
         if file.filename == '':
             return jsonify({"status": "error", "message": "No file selected"}), 400
 
+        file_ext = file.filename.split(".")[-1]
+        if file_ext not in ['txt', "json", "csv"]:
+            return jsonify({"status": "error", "message": "Unsupported file format."}), 400
+
         # Save file
         save_file_name = f"{get_guid()}_{file.filename}"
         file_path = os.path.join(setting.DataFolderPath, save_file_name)
         file.save(file_path)
+        all_files = get_files()
+        next_file_id = max([i['file_id'] for i in all_files]) + 1 if all_files else 1
+        file_meta_data = {"display_file_name": file.filename, "user_id": user_id,
+                          "upload_ts": str(datetime.datetime.now()),
+                          "file_path": file_path, "file_id": next_file_id}
+        add_data = append_to_json(file_meta_data, filepath=setting.files_db_file_path)
+        if not add_data:
+            return jsonify({"status": "error", "message": f"Unable to add file: {file.filename}."}), 422
 
         return jsonify({"status": "Success", "message": "File uploaded successfully",
                         "file_name": file.filename, "file_path": file_path}), 200
