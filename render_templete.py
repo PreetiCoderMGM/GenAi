@@ -16,3 +16,8 @@ def sign_up_page():
 @auth_bp.route("/chat_page")
 def chat_page():
     return render_template("chat_page.html")
+
+
+@auth_bp.route("/upload_file_page")
+def upload_file_page():
+    return render_template("upload_file_page.html")
