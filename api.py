@@ -57,7 +57,7 @@ def get_chat(user_id: int):
         data = sorted_data[:number_of_rec]
         return jsonify({"data": data}), 200
     except Exception as ex:
-        print(f"Exception occurred in ask_llm, ex: {ex}")
+        print(f"Exception occurred while getting chat, ex: {ex}")
         return jsonify({"status": "error", "message": "Internal server error"}), 500
 
 
@@ -154,4 +154,27 @@ def add_file(user_id):
                         "file_name": file.filename, "file_path": file_path}), 200
     except Exception as ex:
         print(f"Exception occurred in adding user, ex: {ex}")
+        return jsonify({"status": "error", "message": "Internal server error"}), 500
+
+
+@api_bp.route('/api/get_files/<user_id>', methods=['GET'])
+def get_files(user_id: int):
+    try:
+        user_id = int(user_id)
+        number_of_rec = 10
+        # Check if file exists
+        if not os.path.exists(setting.files_db_file_path):
+            return jsonify({"status": "error", "message": "Db file not found"}), 404
+        # Check if file is not empty
+        with open(setting.files_db_file_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        file_data = []
+        for d in data:
+            if d['user_id'] == user_id:
+                file_data.append(d)
+        sorted_data = sorted(file_data, key=lambda x: x.get("upload_ts", ""), reverse=True)
+        data = sorted_data[:number_of_rec]
+        return jsonify({"data": data}), 200
+    except Exception as ex:
+        print(f"Exception occurred while getting files, ex: {ex}")
         return jsonify({"status": "error", "message": "Internal server error"}), 500
