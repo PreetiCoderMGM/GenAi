@@ -193,7 +193,11 @@ def get_files(user_id: int):
             return jsonify({"status": "error", "message": "Db file not found"}), 404
         # Check if file is not empty
         with open(setting.files_db_file_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
+            content = f.read().strip()
+            if not content:
+                data = []  # handle empty file safely
+            else:
+                data = json.loads(content)
         file_data = []
         for d in data:
             if d['user_id'] == user_id:
