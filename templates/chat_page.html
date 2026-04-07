@@ -41,12 +41,12 @@ body {
     position: relative;
 }
 
-.logout-btn {
+.back-btn {
     position: absolute;
     right: 15px;
     top: 12px;
-    background: red;
-    color: white;
+    background: #19c37d;
+    color: black;
     border: none;
     padding: 8px 12px;
     border-radius: 6px;
@@ -124,8 +124,8 @@ button {
 
 <div class="chat-wrapper">
     <div class="header">
-        My AI Assistant
-        <button class="logout-btn" onclick="logout()">Logout</button>
+        My AI Assistant (<span id="fileLabel"></span>)
+        <button class="back-btn" onclick="goBack()">Back</button>
     </div>
 
     <div class="chat-container" id="chat"></div>
@@ -138,15 +138,32 @@ button {
 
 <script>
 
-// ✅ Get user_id from session
+// ✅ Get session user_id (only for get_chat)
 const userId = sessionStorage.getItem("user_id");
 
-// ❌ If not logged in → redirect
+// ❌ Redirect if not logged in
 if (!userId) {
     window.location.href = "/login";
 }
 
+// ✅ Get file_id from URL
+const urlParams = new URLSearchParams(window.location.search);
+const fileId = urlParams.get("file_id");
+
+// ❌ If no file_id → redirect
+if (!fileId) {
+    window.location.href = "/get_file";
+}
+
+// Show file id in header
+document.getElementById("fileLabel").innerText = "File ID: " + fileId;
+
 const chat = document.getElementById("chat");
+
+// ✅ Back function
+function goBack() {
+    window.location.href = "/get_file";
+}
 
 // ✅ Add message UI
 function addMessage(text, type) {
@@ -163,10 +180,10 @@ function addMessage(text, type) {
     chat.scrollTop = chat.scrollHeight;
 }
 
-// ✅ Load chat history using URL param
+// ✅ Load chat history (user_id + file_id)
 async function loadChatHistory() {
     try {
-        const response = await fetch(`/api/get_chat/${userId}`);
+        const response = await fetch(`/api/get_chat/${userId}?file_id=${fileId}`);
         const result = await response.json();
 
         if (result.data && Array.isArray(result.data)) {
@@ -185,7 +202,7 @@ async function loadChatHistory() {
     }
 }
 
-// ✅ Send message with user_id in URL
+// ✅ Send message (ONLY file_id)
 async function sendMessage() {
     const input = document.getElementById("question");
     const question = input.value.trim();
@@ -201,7 +218,7 @@ async function sendMessage() {
     chat.scrollTop = chat.scrollHeight;
 
     try {
-        const response = await fetch(`/ask_llm/${userId}`, {
+        const response = await fetch(`/api/ask_llm/${userId}?file_id=${fileId}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -224,12 +241,6 @@ async function sendMessage() {
     }
 }
 
-// ✅ Logout
-function logout() {
-    sessionStorage.removeItem("user_id");
-    window.location.href = "/login";
-}
-
 // Enter key support
 document.getElementById("question")
 .addEventListener("keypress", function(event) {
@@ -238,7 +249,7 @@ document.getElementById("question")
     }
 });
 
-// 🚀 Load chat on page load
+// 🚀 Load chat
 window.onload = loadChatHistory;
 
 </script>

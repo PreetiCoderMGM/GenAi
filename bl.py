@@ -16,7 +16,7 @@ def get_user(filepath=user_db_file_path):
         return []
 
 
-def get_files(filepath=files_db_file_path):
+def get_files_db(filepath=files_db_file_path):
     try:
         with open(filepath, "r") as f:
             data = json.load(f)
