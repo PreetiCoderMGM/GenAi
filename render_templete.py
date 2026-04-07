@@ -8,7 +8,7 @@ def login_page():
     return render_template("login.html")
 
 
-@auth_bp.route("/sign_up")
+@auth_bp.route("/")
 def sign_up_page():
     return render_template("sign_up.html")
 
